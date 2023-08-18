@@ -11,13 +11,13 @@ msg "Stopping app"
 sudo pkill app
 
 msg "Pulling from GitHub"
-git pull
+git pull origin main
 
 msg "Building Go binary"
-go build
+go build *.go
 
 msg "Starting server"
-nohup sudo ./app &>/dev/null &
+nohup sudo ./main &>/dev/null &
 
 duration=$SECONDS
 
