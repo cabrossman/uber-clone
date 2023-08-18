@@ -1,7 +1,7 @@
 source .env
 
 ### SSH
-gcloud compute ssh --zone "us-west4-a" "$INSTANCE_NAME" --project "$PROJECT_ID"
+gcloud compute ssh $INSTANCE_NAME --zone $ZONE --project $PROJECT_ID
 
 ### COPY FILES
 #gcloud compute scp [LOCAL_FILE_PATH] [INSTANCE_NAME]:[REMOTE_FILE_PATH]
@@ -22,7 +22,7 @@ gcloud compute instances stop $INSTANCE_NAME --zone=$ZONE
 ### START APP
 #sudo go run app/main.go &
 #version below passes ENV VARS to sudo
-cd app
+cd $HOME/uber-clone/app
 sudo -E go run main.go &
 
 

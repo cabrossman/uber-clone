@@ -1,19 +1,20 @@
 #!/bin/bash
 SECONDS=0
 
-cd $HOME/uber-clone/app
+cd $HOME/uber-clone
 
 msg () {
   echo -e "$1\n--------------------\n"
 }
 
 msg "Stopping app"
-sudo pkill app
+sudo pkill main
 
 msg "Pulling from GitHub"
-git pull origin main
+git pull
 
 msg "Building Go binary"
+cd app
 go build *.go
 
 msg "Starting server"

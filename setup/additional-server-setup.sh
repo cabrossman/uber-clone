@@ -36,3 +36,7 @@ sudo tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
 #export SERVER_ENV="PROD"
 
 
+##################
+# Install Git
+##################
+sudo apt install git-all
