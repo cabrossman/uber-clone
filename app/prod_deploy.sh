@@ -15,7 +15,7 @@ git pull
 
 msg "Building Go binary"
 cd app
-go build main.go
+/usr/local/go/bin/go build main.go
 
 msg "Starting server"
 nohup sudo -E ./main &>/dev/null &
