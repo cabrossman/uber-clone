@@ -1,24 +1,27 @@
 #!/bin/bash
 SECONDS=0
 
-cd $HOME/uber-clone
+cd $HOME/app
 
 msg () {
-  echo -e "$1\n--------------------\n"
+  echo -e "\n$1\n--------------------\n"
 }
-
-msg "Stopping app"
-sudo pkill main
 
 msg "Pulling from GitHub"
 git pull
 
-msg "Building Go binary"
-cd app
-/usr/local/go/bin/go build main.go
+msg "Building Docker image"
+sudo docker build --tag app .
 
-msg "Starting server"
-nohup sudo -E ./main &>/dev/null &
+msg "Stopping Docker container"
+sudo docker stop app
+sudo docker rm app
+
+msg "Starting Docker container"
+sudo docker run -d --name app --expose 80 -p 80:80 -e SERVER_ENV=PROD app
+
+msg "Pruning stale Docker images"
+sudo docker image prune -f
 
 duration=$SECONDS
 
