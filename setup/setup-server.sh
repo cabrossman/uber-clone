@@ -1,4 +1,4 @@
-source ../.env #get ENV VARS
+source .env #get ENV VARS
 
 gcloud config set project $PROJECT_ID
 
@@ -17,4 +17,5 @@ gcloud compute instances create $INSTANCE_NAME \
     --shielded-vtpm \
     --shielded-integrity-monitoring \
     --labels=goog-ec-src=vm_add-gcloud \
-    --reservation-affinity=any
+    --reservation-affinity=any \
+    --tags=http-server,https-server

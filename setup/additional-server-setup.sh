@@ -3,8 +3,7 @@
 ##################
 
 #remove old version and install this version
-source ../.env
-gcloud compute ssh --zone "us-west4-a" "$INSTANCE_NAME" --project "$PROJECT_ID" #SSH
+source .env
 
 
 cd /usr/local/
@@ -16,7 +15,7 @@ sudo tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
 
 ### ADDITIONAL MANUAL STEP ONE - add to path
 #GCP has some functionality to automatically create the path variable
-#I've modified the config in /etc/profile -> sudo nano profile
+#I've modified the config in /etc/profile -> sudo nano /etc/profile
 # to add this line PATH=$PATH:/usr/local/go/bin before the export PATH
 
 
@@ -40,3 +39,7 @@ sudo tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
 # Install Git
 ##################
 sudo apt install git-all
+##NOTE!! -- after install git it also installs apache which starts running a webserver
+## which conflicts with the go process. Below are some commands to stop Apache and prevent it from starting
+sudo systemctl stop apache2
+sudo systemctl disable apache2

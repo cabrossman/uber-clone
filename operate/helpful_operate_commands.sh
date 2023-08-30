@@ -23,6 +23,7 @@ gcloud compute instances stop $INSTANCE_NAME --zone=$ZONE
 #sudo go run app/main.go &
 #version below passes ENV VARS to sudo
 cd $HOME/uber-clone/app
+sudo go clean -cache
 sudo -E go run main.go &
 
 
@@ -34,4 +35,5 @@ sudo -E go run main.go &
 #...
 
 #need to kill main
-sudo kill 2200330
+ps aux | grep '[g]o'
+sudo kill <PID>
