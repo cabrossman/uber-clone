@@ -1,0 +1,7 @@
+export PROJECT_ID=
+export COMPUTE_SA=
+export INSTANCE_NAME=
+export LOCAL_FILE_PATH=
+export SERVER_ENV=
+export ZONE=
+export PUBLIC_IP=

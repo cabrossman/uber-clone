@@ -8,10 +8,6 @@ gcloud compute ssh $INSTANCE_NAME --zone $ZONE --project $PROJECT_ID
 gcloud compute scp --recurse $LOCAL_FILE_PATH/app/ $INSTANCE_NAME:~ --zone $ZONE
 
 
-#GET Data
-curl http://$PUBLIC_IP:80/data
-
-
 ### START & STOP SERVER
 #start
 gcloud compute instances start $INSTANCE_NAME --zone=$ZONE
@@ -25,8 +21,6 @@ gcloud compute instances stop $INSTANCE_NAME --zone=$ZONE
 cd $HOME/uber-clone/app
 sudo go clean -cache
 sudo -E go run main.go &
-
-
 # This actually starts 3 processes
 #...
 #2200302 pts/1    00:00:00 sudo
@@ -36,4 +30,4 @@ sudo -E go run main.go &
 
 #need to kill main
 ps aux | grep '[g]o'
-sudo kill <PID>
+sudo pkill main
