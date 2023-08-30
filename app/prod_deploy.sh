@@ -15,10 +15,10 @@ git pull
 
 msg "Building Go binary"
 cd app
-go build *.go
+go build main.go
 
 msg "Starting server"
-nohup sudo ./main &>/dev/null &
+nohup sudo -E ./main &>/dev/null &
 
 duration=$SECONDS
 
