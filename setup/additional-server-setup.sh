@@ -71,3 +71,15 @@ sudo apt-get update
 
 #finally install docker
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+###################
+# Install NPM
+###################
+sudo apt update
+sudo apt install nodejs
+sudo apt install npm
+
+### eventually when you get here
+# ~/uber-clone/app/simulation
+# npm install
