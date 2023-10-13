@@ -1,7 +1,7 @@
 const baseUrl: string =
   process.env.REACT_APP_ENV === 'dev'
     ? 'http://localhost:8080'
-    : '34.125.125.8';
+    : 'http://34.125.125.8';
 
 export const api: { [key: string]: any } = {};
 
