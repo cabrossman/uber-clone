@@ -1,7 +1,8 @@
 import obstacles from '../../shared/obstacles.js';
 import { getRandomInt } from '../../shared/utils.js';
 import config from '../../shared/config.js';
-import { CoordPair, Graph, Obstacles } from './types.js';
+import { getObstaclesMap } from '../../shared/methods.js';
+import { Coord, CoordPair, Graph, Path } from './types.js';
 
 const { gridCount } = config;
 
@@ -10,40 +11,25 @@ interface Cache {
 }
 const cache: Cache = { graph: null };
 
-export const getObstaclesSet = (obstacles: Obstacles): Set<string> => {
-  const obstaclesSet = new Set<string>();
-  obstacles.forEach(([xStart, xEnd, yStart, yEnd]) => {
-    let x = xStart;
-    while (x <= xEnd) {
-      let y = yStart;
-      while (y <= yEnd) {
-        obstaclesSet.add(`${x}:${y}`);
-        y += 1;
-      }
-      x += 1;
-    }
-  });
-
-  return obstaclesSet;
-};
-
 export const getRoadNodes = (): CoordPair[] => {
-  const obstaclesSet = getObstaclesSet(obstacles);
+  const obstaclesMap = getObstaclesMap(obstacles);
 
   const roadNodes: CoordPair[] = [];
   for (let x = 0; x < gridCount; x++) {
     for (let y = 0; y < gridCount; y++) {
-      if (!obstaclesSet.has(`${x}:${y}`)) {
+      if (!obstaclesMap.get(`${x}:${y}`)) {
         roadNodes.push([x, y]);
       }
     }
   }
 
-  return roadNodes;
+  return roadNodes.filter(([x, y]: CoordPair) => {
+    return x !== 0 && x !== gridCount - 1 && y !== 0 && y !== gridCount - 1;
+  });
 };
 
 export const buildGraph = (
-  obstaclesSet: Set<string>,
+  obstaclesMap: Map<string, string>,
   gridCount: number
 ): Graph => {
   const graph: Graph = [];
@@ -51,7 +37,7 @@ export const buildGraph = (
     graph[y] = [];
 
     for (let x = 0; x < gridCount; x++) {
-      if (obstaclesSet.has(`${x}:${y}`)) graph[y][x] = 0;
+      if (obstaclesMap.get(`${x}:${y}`)) graph[y][x] = 0;
       else graph[y][x] = 1;
     }
   }
@@ -61,7 +47,7 @@ export const buildGraph = (
 
 export const getGraph = (): Graph => {
   if (cache.graph) return cache.graph;
-  cache.graph = buildGraph(getObstaclesSet(obstacles), gridCount);
+  cache.graph = buildGraph(getObstaclesMap(obstacles), gridCount);
   return cache.graph;
 };
 
@@ -73,10 +59,10 @@ export const getDestinationRange = (coord: number): [number, number] =>
 export const getClosestRoadNode = (
   x: number,
   y: number,
-  graph: Graph
+  graph: Graph = getGraph()
 ): CoordPair => {
   const isValid = (y, x) =>
-    y > 0 && y < graph.length - 1 && x > 0 && x < graph[y].length - 1;
+    y >= 0 && y < graph.length && x >= 0 && x < graph[y].length;
 
   if (isValid(y, x) && graph[y][x] === 1) return [x, y];
 
@@ -101,7 +87,9 @@ export const getClosestRoadNode = (
         const nextX = x + dx;
 
         if (isValid(nextY, nextX) && !seen.has(`${nextY}:${nextX}`)) {
-          if (graph[nextY][nextX] === 1) return [nextX, nextY];
+          if (graph[nextY][nextX] === 1) {
+            return [nextX, nextY];
+          }
           seen.add(`${nextY}:${nextX}`);
           nextQueue.push([nextY, nextX]);
         }
@@ -112,8 +100,6 @@ export const getClosestRoadNode = (
 };
 
 export const generateDestination = (coordPair: CoordPair): CoordPair => {
-  const graph = getGraph();
-
   const [startX, startY] = coordPair;
   const rangeX = getDestinationRange(startX);
   const rangeY = getDestinationRange(startY);
@@ -121,7 +107,64 @@ export const generateDestination = (coordPair: CoordPair): CoordPair => {
   const destX = getRandomInt(rangeX[0], rangeX[1]);
   const destY = getRandomInt(rangeY[0], rangeY[1]);
 
-  let destination = getClosestRoadNode(destX, destY, graph);
+  let destination = getClosestRoadNode(destX, destY);
 
   return destination;
+};
+
+export const getStraightLineDistance = (
+  coordsA: CoordPair,
+  coordsB: CoordPair
+): number => {
+  const [xA, yA] = coordsA;
+  const [xB, yB] = coordsB;
+  return Math.sqrt(Math.pow(xB - xA, 2) + Math.pow(yB - yA, 2));
+};
+
+export const getShortestPath = (
+  startingPosition: CoordPair,
+  destination: CoordPair,
+  graph: Graph = getGraph()
+): Path => {
+  const isValid = (y, x) =>
+    y >= 0 &&
+    y < graph.length &&
+    x >= 0 &&
+    x < graph[y].length &&
+    graph[y][x] === 1;
+
+  const directions: [number, number][] = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ];
+
+  const [col, row]: CoordPair = startingPosition;
+  let queue: [Coord, Coord, CoordPair[]][] = [[row, col, [startingPosition]]];
+  const seen = new Set([`${row}:${col}`]);
+
+  while (queue.length) {
+    const nextQueue = [];
+    for (let i = 0; i < queue.length; i++) {
+      const [row, col, currPath] = queue[i];
+
+      if (row === destination[1] && col === destination[0]) {
+        return currPath;
+      }
+
+      for (let j = 0; j < directions.length; j++) {
+        const [dx, dy]: [number, number] = directions[j];
+
+        const nextRow = row + dy;
+        const nextCol = col + dx;
+
+        if (isValid(nextRow, nextCol) && !seen.has(`${nextRow}:${nextCol}`)) {
+          seen.add(`${nextRow}:${nextCol}`);
+          nextQueue.push([nextRow, nextCol, [...currPath, [nextCol, nextRow]]]);
+        }
+      }
+    }
+    queue = nextQueue;
+  }
 };

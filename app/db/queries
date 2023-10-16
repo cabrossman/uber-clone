@@ -1,14 +1,21 @@
 CREATE TABLE customers (
   id SERIAL PRIMARY KEY,
+  customer_id uuid UNIQUE,
   name VARCHAR(255) UNIQUE NOT NULL,
   active BOOLEAN,
-  location VARCHAR(255) NOT NULL,
-  destination VARCHAR(255) NOT NULL
+  location VARCHAR(5) NOT NULL,
+  destination VARCHAR(5) NOT NULL,
+  driver_id uuid UNIQUE
 );
 
-CREATE TABLE rides (
+CREATE TYPE status_enum AS ENUM ('idle', 'pickup', 'enroute');
+CREATE TABLE drivers (
   id SERIAL PRIMARY KEY,
-  car_id VARCHAR(255) UNIQUE NOT NULL,
-  location VARCHAR(255) NOT NULL,
-  path TEXT
+  driver_id uuid UNIQUE,
+  name VARCHAR(255) UNIQUE NOT NULL,
+  status status_enum NOT NULL,
+  location VARCHAR(5) NOT NULL,
+  path TEXT,
+  path_index INTEGER,
+  customer_id uuid UNIQUE
 );

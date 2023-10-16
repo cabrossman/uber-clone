@@ -1,31 +1,26 @@
 import { wait } from '../../shared/utils.js';
-import {
-  generateDestination,
-  getClosestRoadNode,
-  getGraph,
-} from './methods.js';
-
-const graph = getGraph();
+import { generateDestination } from './methods.js';
+import { CoordPair } from './types.js';
 
 interface Message {
-  name: string;
-  location: [number, number];
+  customerId: string;
+  location: CoordPair;
 }
 
 const queue: Message[] = [];
 
-process.on('message', ({ name, location }: Message) => {
-  queue.push({ name, location });
+process.on('message', ({ customerId, location }: Message) => {
+  queue.push({ customerId, location });
 });
 
 const main = async () => {
   while (true) {
     if (queue.length) {
-      const { name, location } = queue.shift();
+      const { customerId, location } = queue.shift();
       const [x, y] = location;
 
       let [destX, destY] = generateDestination([x, y]);
-      process.send({ name, destination: [destX, destY] });
+      process.send({ customerId, destination: [destX, destY] });
     }
 
     if (queue.length) continue;

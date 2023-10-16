@@ -10,10 +10,22 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt
     environment:
       SERVER_ENV: ${SERVER_ENV}
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 200M
   simulation:
     build:
       context: .
       dockerfile: ./simulation/Dockerfile
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 200M
   db:
     image: postgres:15.1-alpine
     ports:
@@ -22,6 +34,12 @@ services:
       - app-db:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 400M
 
 volumes:
   app-db:

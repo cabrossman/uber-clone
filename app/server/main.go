@@ -8,45 +8,86 @@ import (
 	"os"
 )
 
-type Ride struct {
-	Id       string `json:"id"`
-	CarId    string `json:"car_id"`
-	Location string `json:"location"`
-	Path     string `json:"path"`
+type Driver struct {
+	Id         string `json:"id"`
+	DriverId   string `json:"driverId"`
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	Location   string `json:"location"`
+	Path       string `json:"path"`
+	PathIndex  int    `json:"pathIndex"`
+	CustomerId string `json:"customerId"`
 }
 
 type Customer struct {
 	Id          string `json:"id"`
+	CustomerId  string `json:"customerId"`
 	Name        string `json:"name"`
 	Active      bool   `json:"active"`
 	Location    string `json:"location"`
 	Destination string `json:"destination"`
+	DriverId    string `json:"driverId"`
 }
 
-func getRides(w http.ResponseWriter, req *http.Request) {
-	rows, err := db.Connection.Query("SELECT * FROM rides")
+func getDrivers(w http.ResponseWriter, req *http.Request) {
+	rows, err := db.Connection.Query(`
+		SELECT
+			id,
+			driver_id,
+			name, 
+			status, 
+			location,
+			path,
+			path_index,
+			customer_id 
+		FROM drivers
+		`,
+	)
 	if err != nil {
-		http.Error(w, "Failed to get rides: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to get drivers: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	var rides []Ride
+	var drivers []Driver
 
 	for rows.Next() {
-		var ride Ride
-		rows.Scan(&ride.Id, &ride.CarId, &ride.Location, &ride.Path)
-		rides = append(rides, ride)
+		var driver Driver
+		rows.Scan(
+			&driver.Id,
+			&driver.DriverId,
+			&driver.Name,
+			&driver.Status,
+			&driver.Location,
+			&driver.Path,
+			&driver.PathIndex,
+			&driver.CustomerId,
+		)
+		drivers = append(drivers, driver)
 	}
 
-	ridesBytes, _ := json.MarshalIndent(rides, "", "\t")
+	ridesBytes, _ := json.MarshalIndent(drivers, "", "\t")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(ridesBytes)
 }
 
 func getCustomers(w http.ResponseWriter, req *http.Request) {
-	rows, err := db.Connection.Query("SELECT * FROM customers where active = true")
+	rows, err := db.Connection.Query(`
+		SELECT 
+			id, 
+			customer_id, 
+			name, 
+			active, 
+			location, 
+			destination, 
+			driver_id 
+		FROM customers WHERE
+		active = true AND 
+		driver_id IS NULL AND 
+		(location IS NOT NULL AND location != 'null') 
+		`,
+	)
 	if err != nil {
 		http.Error(w, "Failed to get customers: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -59,10 +100,12 @@ func getCustomers(w http.ResponseWriter, req *http.Request) {
 		var customer Customer
 		rows.Scan(
 			&customer.Id,
+			&customer.CustomerId,
 			&customer.Name,
 			&customer.Active,
 			&customer.Location,
 			&customer.Destination,
+			&customer.DriverId,
 		)
 		customers = append(customers, customer)
 	}
@@ -78,7 +121,7 @@ func main() {
 	defer db.Connection.Close()
 
 	http.Handle("/", http.FileServer(http.Dir("../frontend/build")))
-	http.HandleFunc("/rides", getRides)
+	http.HandleFunc("/drivers", getDrivers)
 	http.HandleFunc("/customers", getCustomers)
 
 	serverEnv := os.Getenv("SERVER_ENV")
